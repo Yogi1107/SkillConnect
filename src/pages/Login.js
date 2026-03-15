@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./Auth.css";
+
 import { Link,useNavigate } from "react-router-dom";
 import Authenticate from "./Authenticate";
 export default function Login() {
@@ -19,31 +19,34 @@ export default function Login() {
   return (
     <>
     
-    <div className="auth-container fixed inset-0 z-50  bg-black/50">
-      <div className="auth-box">
-        <h2>Login to SkillConnect</h2>
-
-        <form onSubmit={handleSubmit}>
+    <div className="auth-container  bg-base ">
+      <div className="auth-box flex flex-col items-center justify-center text-white h-full">
+        <h1 className="font-primary">Login to SkillConnect</h1>
+        <div className="border p-4 border-primary">
+        <form onSubmit={handleSubmit} className=" flex flex-col items-center justify-center gap-2 text-black">
           <input type="email" 
           onChange={(e)=>setEmail(e.target.value)}
-          placeholder="Email" required />
+          placeholder="Email" 
+          className="p-2 w-full"
+          required />
           <input type="password" 
           onChange={(e)=>setPassword(e.target.value)}
-          placeholder="Password" required />
+          placeholder="Password" 
+          className="p-2 w-full"
+          required />
 
-          <button type="submit">Login</button>
+          <button type="submit" className="bg-primary p-2 w-full text-base font-bold hover:bg-lime-400">Login</button>
         </form>
 <Link to="/register" className="toggle-text">
-  Don't have an account? Register
+  <p className="text-muted font-primary mt-4 hover:text-white">Don't have an account? Register</p>
 </Link>
+</div>
+
 
       </div>
       {isLogin && Navigate("/home")}
     </div>
-    <div className="blur h-screen ">
-      <p className="text-white text-[100px] fixed inset-0 z-50 px-20">Create<br></br> Win <br></br>Inspire</p>
-      <img src="image.png"></img>
-    </div>
+
     </>
   );
 }

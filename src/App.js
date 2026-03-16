@@ -17,7 +17,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
 
 function App() {
-const [user,setUser] = useState("Abhi");
+const [user,setUser] = useState(null);
   //const navigate = useNavigate();
   const ProtectedRoute = ({user,children})=>{
     return user ? children : <Navigate to="/login" replace />;
@@ -35,12 +35,32 @@ const [user,setUser] = useState("Abhi");
         <Route path="/register" element={<Register />} /> */}
        
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login/>}/>
+            <Route path="/login" element={<Login setUser={setUser} />}/>
           <Route path="/register" element={<Register/>}/>
-          <Route path="/hackathon-register" element={<RegistrationPage/>}/>
-          <Route path="/profile" element={<Profile/>}/>
-          <Route path="/explore" element={<Explore/>}/>
-          <Route path="/host" element={<Hackathon/>}/>
+
+
+          <Route path="/hackathon-register" element={
+            <ProtectedRoute user={user}>
+              <RegistrationPage/>
+              </ProtectedRoute> }/>
+
+          <Route path="/profile" element={
+          <ProtectedRoute user={user}>
+              <Profile/>
+              </ProtectedRoute> }/>
+
+          <Route path="/explore" element={
+          <ProtectedRoute user={user}>
+              <Explore/>
+              </ProtectedRoute> }/>
+
+          <Route path="/host" element={
+            <ProtectedRoute  user={user}>
+            <Hackathon/>
+            </ProtectedRoute>
+            }
+          />
+
            <Route path="/team" element={
             <ProtectedRoute  user={user}>
             <Team/>

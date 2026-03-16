@@ -30,6 +30,7 @@ connectDB();
 
 app.post("/api/login", async (req, res) => {
   try {
+    console.log(req.body);
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -88,6 +89,14 @@ app.get("/api/hackathons", async (req, res) => {
     });
   }
 });
+
+app.get("/promotionalHackathons", async (req, res) => {
+
+    const data = await hackathonsCollection.find({})
+      .toArray();
+
+    res.json(data);
+  });
 
 
 app.listen(PORT, () => {

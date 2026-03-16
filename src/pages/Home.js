@@ -7,7 +7,8 @@ const Home = () => {
 
   const [hackathons, setHackathons] = useState([]);
 
-  const filters = ["Offline/Online","Type","Date","Location"];
+  const filters = ["Offline", "Online", "Type", "Date", "Location"];
+  const [selectedMode, setSelectedMode] = useState(null);
 
   useEffect(() => {
 
@@ -20,19 +21,69 @@ const Home = () => {
 
   }, []);
 
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/promotionalHackathons")
+      .then(res => res.json())
+      .then(data => setHackathons(data));
+  }, []);
+
+  // useEffect(() => {
+
+  //   if (hackathons.length === 0) return;
+
+  //   const interval = setInterval(() => {
+  //     setIndex((prev) => (prev + 1) % hackathons.length);
+  //   }, 4000);
+
+  //   return () => clearInterval(interval);
+
+  // }, [hackathons]);
+
+
   return (
     <div className="p-10 min-h-screen font-primary">
 
       {/* Hero Section */}
-      <div className="h-[500px] w-full border border-[#9499A4] rounded-md mb-5"></div>
+      <div
+        className="h-[500px] w-full border border-[#9499A4] rounded-md mb-5 overflow-hidden relative bg-cover bg-center transition-all duration-700"
+        style={{
+          backgroundImage: hackathons[index]
+            ? `url(${hackathons[index].image})`
+            : "none"
+        }}
+      >
+
+        {hackathons[index] && (
+          <div className="absolute bottom-0 bg-black/60 text-white p-6 w-full">
+            <h2 className="text-2xl font-bold">{hackathons[index].title}</h2>
+            <p>{hackathons[index].description}</p>
+          </div>
+        )}
+
+      </div>
 
       {/* Filters */}
       <div className="flex items-center justify-center gap-10">
 
-        {filters.map((value,index)=>(
+        <div className="flex gap-3 bg-gray-200 p-2 rounded-lg">
+          {["Offline", "Online"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setSelectedMode(mode)}
+              className={`p-3 font-bold rounded-md transition transform hover:scale-105
+            ${selectedMode === mode ? "bg-primary text-base" : "bg-white"}`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+
+        {filters.slice(2).map((value, index) => (
           <button
             key={index}
-            className="bg-primary p-3 font-bold"
+            className="bg-primary p-3 font-bold rounded-md transition transform hover:scale-105"
           >
             {value}
           </button>
@@ -61,11 +112,14 @@ const Home = () => {
               className="w-full h-[120px] object-cover border-b border-b-primary"
             />
 
-            <div className="p-3 h-full ">
+            <div className="p-3 h-full overflow-hidden">
 
               <h2 className="text-[15px] text-primary ">
                 {event.title}
               </h2>
+              <p className="text-[12px] text-white font-semibold">
+                {event.location}
+              </p>
 
               <p className="text-[12px] text-white font-semibold">
                 {event.startDate} - {event.endDate}
@@ -74,23 +128,24 @@ const Home = () => {
               <p className="text-[15px] text-accent leading-relaxed mb-5">
                 {event.description}
               </p>
-               </div>
-              <div className="flex flex-row gap-3 mb-0 ">
+            </div>
 
-                <button
-                  onClick={() => navigate("/hackathon-register")}
-                  className="flex-1 py-2 font-bold cursor-pointer border border-primary text-white hover:bg-primary hover:text-base"
-                >
-                  Register
-                </button>
 
-                <button className="flex-1 py-2 bg-base text-white border border-primary font-bold cursor-pointer hover:bg-primary hover:text-base">
-                  Explore
-                </button>
+            <div className="flex flex-row gap-3 mb-0 ">
+              <button
+                onClick={() => navigate("/hackathon-register")}
+                className="flex-1 py-2 font-bold cursor-pointer border border-primary text-white hover:bg-primary hover:text-base"
+              >
+                Register
+              </button>
 
-              </div>
+              <button className="flex-1 py-2 bg-base text-white border border-primary font-bold cursor-pointer hover:bg-primary hover:text-base">
+                Explore
+              </button>
 
-           
+            </div>
+
+
 
           </div>
 

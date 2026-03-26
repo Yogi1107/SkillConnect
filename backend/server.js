@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId} from "mongodb";
 import dotenv from "dotenv";
 import axios from "axios";
 
@@ -131,6 +131,34 @@ async function analyzeGithub(username) {
 // -----------------------------
 // Routes
 // -----------------------------
+// Get hackathon by ID
+app.get("/api/hackathons/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const hackathon = await hackathonsCollection.findOne({
+      _id: new ObjectId(id)
+    });
+
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: hackathon
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
 app.post("/api/register", async (req, res) => {
   try {

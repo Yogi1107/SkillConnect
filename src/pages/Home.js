@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextType from '../animations/TextType.js';
+import Modal from "../components/Modal.js";
+import axios from "axios";
 
 const Home = () => {
 
@@ -10,6 +12,23 @@ const Home = () => {
 
   const filters = ["Offline", "Online", "Type", "Date", "Location"];
   const [selectedMode, setSelectedMode] = useState(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [hackathon, setHackathon] = useState(null);
+
+  const handleOpen = async (id) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/hackathons/${id}`
+      );
+
+      setHackathon(res.data.data);
+      setIsOpen(true);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
 
@@ -59,7 +78,7 @@ const Home = () => {
           className="text-4xl md:text-6xl font-extrabold text-white"
         />
       </div>
-      <br></br> 
+      <br></br>
       {/* Hero Section */}
       <div
         className="h-[500px] w-full border border-[#9499A4] rounded-md mb-5 overflow-hidden relative bg-cover bg-center transition-all duration-700"
@@ -154,9 +173,16 @@ const Home = () => {
                 Register
               </button>
 
-              <button className="flex-1 py-2 bg-base text-white border border-primary font-bold cursor-pointer hover:bg-primary hover:text-base">
+              <button
+                onClick={() => handleOpen(event._id)}
+                className="flex-1 py-2 bg-base text-white border border-primary font-bold cursor-pointer hover:bg-primary hover:text-base"
+              >
                 Explore
               </button>
+
+              {isOpen && hackathon && (
+                <Modal hackathon={hackathon} onClose={() => setIsOpen(false)} />
+              )}
 
             </div>
 

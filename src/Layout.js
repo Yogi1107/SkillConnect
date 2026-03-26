@@ -9,8 +9,9 @@ import {
   IoLogoYoutube,
   IoLogoGithub
 } from "react-icons/io";
+import { Link } from "react-router-dom";
 
-const Layout = ({children}) => {
+const Layout = ({ children }) => {
 
   const socialLinks = [
     { icon: <IoLogoFacebook />, link: "https://facebook.com" },
@@ -24,7 +25,7 @@ const Layout = ({children}) => {
 
   return (
     <div className="bg-base min-h-screen flex flex-col">
-      
+
       <Navbar />
 
       <div className="mt-[50px] flex-grow">
@@ -33,24 +34,88 @@ const Layout = ({children}) => {
 
       <footer className="text-white flex flex-col items-center justify-center bg-base">
 
-        <div className="border-t border-t-muted border-b border-b-muted w-full flex items-center justify-end p-10 gap-4 pb-[50px] pt-[50px]">
+        <div className="border-t border-t-muted border-b border-b-muted w-full flex flex-col md:flex-row items-center md:items-start justify-between p-10 gap-8">
 
-          {socialLinks.map((item, index) => (
-            <a
-              key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-3xl  hover:text-primary transition duration-200 cursor-pointer"
-            >
-              {item.icon}
-            </a>
-          ))}
+          <div className='small-6 large-3'>
+            <nav>
+              <h4 className="text-lg font-semibold mb-3">Portfolio</h4>
+              <ul>
+                <li>
+                  <Link to="/about" className="hover:text-primary transition">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="hover:text-primary transition">
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/" className="hover:text-primary transition">
+                    Help
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Hackathon Section */}
+          <div className="small-6 large-3">
+            <nav>
+              <h4 className="text-lg font-semibold mb-3">Hackathons</h4>
+              <ul>
+                <li>
+                  <Link to="/explore-hackathons" className="hover:text-primary transition">
+                    Browse Hackathons
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/host-hackathon" className="hover:text-primary transition">
+                    Host a Hackathon
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          <div className='small-6 large-3'>
+            <nav>
+              <h4 className="text-lg font-semibold mb-3">Portfolio</h4>
+              <ul>
+                <li>
+                  <Link to="/profile" className="hover:text-primary transition">
+                    Your Teams
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/profile" className="hover:text-primary transition">
+                    Your Projects
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Social Links */}
+          <div className="flex gap-5">
+            {socialLinks.map((item, index) => (
+              <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-3xl hover:text-primary transition duration-200 cursor-pointer"
+              >
+                {item.icon}
+              </a>
+            ))}
+          </div>
 
         </div>
 
-        <div className="m-8 font-primary">
-          Copyright © 2026 SkillConnect
+        {/* Footer Bottom */}
+        <div className="m-6 font-primary text-sm text-gray-400">
+          © 2026 SkillConnect. All rights reserved.
         </div>
 
       </footer>

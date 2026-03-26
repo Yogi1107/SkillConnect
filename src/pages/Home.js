@@ -49,17 +49,17 @@ const Home = () => {
       .then(data => setHackathons(data));
   }, []);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    if (hackathons.length === 0) return;
+  //   if (hackathons.length === 0) return;
 
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % hackathons.length);
-    }, 4000);
+  //   const interval = setInterval(() => {
+  //     setIndex((prev) => (prev + 1) % hackathons.length);
+  //   }, 4000);
 
-    return () => clearInterval(interval);
+  //   return () => clearInterval(interval);
 
-  }, [hackathons]);
+  // }, [hackathons]);
 
 
   return (
@@ -78,6 +78,8 @@ const Home = () => {
           className="text-4xl md:text-6xl font-extrabold text-white"
         />
       </div>
+      <br></br>
+      <h3 class="large text-center text-white mb-5"> We analyze your skills and match you with the right teammates instantly. </h3>
       <br></br>
       {/* Hero Section */}
       <div

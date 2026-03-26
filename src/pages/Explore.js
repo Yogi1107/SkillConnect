@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CiFilter } from "react-icons/ci";
 import axios from "axios";
+import UserModal from '../components/UserModal';
 
 const Explore = () => {
   const [isFilterOpen, openFilter] = useState(false);
@@ -11,6 +12,9 @@ const Explore = () => {
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [search, setSearch] = useState("");
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   // 🔥 Fetch Users
   useEffect(() => {
@@ -85,9 +89,23 @@ const Explore = () => {
     setFilteredUsers(users);
   };
 
+const handleUserProfile = async (email) => {
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/users?email=${email}`
+    );
+
+    setSelectedUser(res.data);
+    setIsUserModalOpen(true);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
   return (
     <div className="text-white p-5">
-      
+
       {/* 🔍 Search + Filter */}
       <div className="flex w-full items-center justify-center gap-5">
         <div className="bg-base w-[50%]">
@@ -141,10 +159,9 @@ const Explore = () => {
                       key={skill}
                       onClick={() => toggleSkill(skill)}
                       className={`border px-3 py-1 rounded-full cursor-pointer
-                        ${
-                          selectedSkills.includes(skill)
-                            ? "bg-primary text-black"
-                            : ""
+                        ${selectedSkills.includes(skill)
+                          ? "bg-primary text-black"
+                          : ""
                         }`}
                     >
                       {skill}
@@ -177,32 +194,81 @@ const Explore = () => {
       {/* 🔥 RESULTS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
         {filteredUsers.map((user, index) => (
-          <div key={index} className="bg-base p-5 rounded-xl shadow-lg">
+          <div
+            key={index}
+            className="bg-gradient-to-br from-base to-[#1a1a1a] border border-[#2a2a2a] 
+                 p-6 rounded-2xl shadow-xl hover:scale-[1.03] transition-all duration-300"
+          >
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={user.avatar}
+                alt="avatar"
+                className="w-14 h-14 rounded-full border-2 border-primary"
+              />
 
-            <img
-              src={user.avatar}
-              alt="avatar"
-              className="w-16 h-16 rounded-full mb-3"
-            />
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  {user.name}
+                </h2>
+                <p className="text-xs text-gray-400">
+                  {user.email}
+                </p>
+              </div>
+            </div>
 
-            <h2 className="text-lg font-bold">{user.name}</h2>
-            <p className="text-sm text-muted">{user.email}</p>
+            {/* Skills */}
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-primary mb-1">
+                Skills
+              </p>
 
-            <div className="mt-2 text-sm">
-              <strong>Skills:</strong>
-              <p>
+              <div className="flex flex-wrap gap-2">
                 {[
                   ...(user.skills?.languages || []),
                   ...(user.skills?.frameworks || []),
-                ].join(", ")}
+                ].slice(0, 6).map((skill, i) => (
+                  <span
+                    key={i}
+                    className="px-2 py-1 text-xs rounded-full 
+                         bg-[#2b2b2b] text-white border border-[#3a3a3a]"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Role */}
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-primary">
+                Top Role
+              </p>
+
+              <p className="text-white text-sm mt-1">
+                {user.roles?.[0]?.role || "Not analyzed"}
               </p>
             </div>
 
-            <div className="mt-2 text-sm">
-              <strong>Top Role:</strong>
-              <p>{user.roles?.[0]?.role}</p>
-            </div>
+            {/* Footer badge */}
+            <div className="mt-5 flex justify-between items-center">
+              <span className="text-xs text-gray-400">
+                🚀 Ready for Hackathon
+              </span>
 
+              <button
+                onClick={() => handleUserProfile(user.email)}
+                className="text-xs px-3 py-1 rounded-full bg-primary text-black font-semibold hover:opacity-80"
+              >
+                View Profile
+              </button>
+              {isUserModalOpen && selectedUser && (
+                <UserModal
+                  user={selectedUser}
+                  onClose={() => setIsUserModalOpen(false)}
+                />
+              )}
+            </div>
           </div>
         ))}
       </div>

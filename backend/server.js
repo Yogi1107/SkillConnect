@@ -379,8 +379,37 @@ app.get("/promotionalHackathons", async (req, res) => {
 
 // Users
 app.get("/api/users", async (req, res) => {
-  const users = await usersCollection.find({}).toArray();
-  res.json(users);
+  try {
+    const email = req.query.email;
+
+    // --------------------------
+    // CASE 1: GET ALL USERS
+    // --------------------------
+    if (!email) {
+      const users = await usersCollection.find({}).toArray();
+      return res.json(users);
+    }
+
+    // --------------------------
+    // CASE 2: GET USER BY EMAIL
+    // --------------------------
+    const user = await usersCollection.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    res.json(user);
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 });
 
 // Teams
@@ -394,6 +423,7 @@ app.get("/api/teams", async (req, res) => {
     });
   }
 });
+
 
 // -----------------------------
 // Server Start

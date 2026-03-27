@@ -1,26 +1,31 @@
 import React from 'react'
 import Navbar from './components/Navbar';
-import {
-  IoLogoFacebook,
-  IoLogoInstagram,
-  IoLogoGoogle,
-  IoLogoLinkedin,
-  IoLogoWhatsapp,
-  IoLogoYoutube,
-  IoLogoGithub
-} from "react-icons/io";
+import { FaTwitter, FaDiscord, FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Layout = ({ children }) => {
 
   const socialLinks = [
-    { icon: <IoLogoFacebook />, link: "https://facebook.com" },
-    { icon: <IoLogoInstagram />, link: "https://instagram.com" },
-    { icon: <IoLogoGoogle />, link: "https://google.com" },
-    { icon: <IoLogoLinkedin />, link: "https://linkedin.com" },
-    { icon: <IoLogoYoutube />, link: "https://youtube.com" },
-    { icon: <IoLogoGithub />, link: "https://github.com" },
-    { icon: <IoLogoWhatsapp />, link: "https://whatsapp.com" }
+    {
+      name: "Twitter",
+      icon: <FaTwitter />,
+      link: "https://twitter.com/devpost",
+    },
+    {
+      name: "Discord",
+      icon: <FaDiscord />,
+      link: "https://discord.com/invite/HP4BhW3hnp",
+    },
+    {
+      name: "Facebook",
+      icon: <FaFacebookF />,
+      link: "https://www.facebook.com/devposthacks",
+    },
+    {
+      name: "LinkedIn",
+      icon: <FaLinkedinIn />,
+      link: "https://www.linkedin.com/company/devpost/",
+    },
   ];
 
   return (
@@ -97,18 +102,37 @@ const Layout = ({ children }) => {
           </div>
 
           {/* Social Links */}
-          <div className="flex gap-5">
-            {socialLinks.map((item, index) => (
-              <a
-                key={index}
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-3xl hover:text-primary transition duration-200 cursor-pointer"
-              >
-                {item.icon}
-              </a>
-            ))}
+          <div className="w-full md:w-1/4">
+            <nav>
+              <h4 className="text-lg font-semibold text-white mb-4">Connect</h4>
+
+              <ul className="space-y-4">
+
+                {socialLinks.map((item, index) => (
+                  <li key={index}>
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 group"
+                    >
+
+                      {/* Icon */}
+                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 text-xl text-white group-hover:bg-primary group-hover:text-black transition">
+                        {item.icon}
+                      </div>
+
+                      {/* Label */}
+                      <span className="text-gray-300 group-hover:text-primary transition">
+                        {item.name}
+                      </span>
+
+                    </a>
+                  </li>
+                ))}
+
+              </ul>
+            </nav>
           </div>
 
         </div>

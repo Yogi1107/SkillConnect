@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextType from '../animations/TextType.js';
 import Modal from "../components/Modal.js";
+import DemoSection from "../components/DemoSection.js";
+import StepSection from "../components/StepSection.js";
 import axios from "axios";
 
 const Home = () => {
@@ -49,17 +51,17 @@ const Home = () => {
       .then(data => setHackathons(data));
   }, []);
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   if (hackathons.length === 0) return;
+    if (hackathons.length === 0) return;
 
-  //   const interval = setInterval(() => {
-  //     setIndex((prev) => (prev + 1) % hackathons.length);
-  //   }, 4000);
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % hackathons.length);
+    }, 4000);
 
-  //   return () => clearInterval(interval);
+    return () => clearInterval(interval);
 
-  // }, [hackathons]);
+  }, [hackathons]);
 
 
   return (
@@ -99,6 +101,9 @@ const Home = () => {
         )}
 
       </div>
+
+      <DemoSection/>
+      <StepSection />
 
       {/* Filters */}
       <div className="flex items-center justify-center gap-10">

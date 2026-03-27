@@ -89,19 +89,34 @@ const Explore = () => {
     setFilteredUsers(users);
   };
 
-const handleUserProfile = async (email) => {
-  try {
-    const res = await axios.get(
-      `http://localhost:5000/api/users?email=${email}`
-    );
+  const handleUserProfile = async (email) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/users?email=${email}`
+      );
 
-    setSelectedUser(res.data);
-    setIsUserModalOpen(true);
+      setSelectedUser(res.data);
+      setIsUserModalOpen(true);
 
-  } catch (err) {
-    console.error(err);
-  }
-};
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const sendRequest = async (toUserId) => {
+    try {
+      await axios.post("http://localhost:5000/api/request/send", {
+        fromUserId: "user1", // 🔥 replace later with logged-in user
+        toUserId,
+        type: "connection"
+      });
+
+      alert("Connection request sent 🚀");
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="text-white p-5">
@@ -268,6 +283,13 @@ const handleUserProfile = async (email) => {
                   onClose={() => setIsUserModalOpen(false)}
                 />
               )}
+              {/* 🔥 Connect Button */}
+              <button
+                onClick={() => sendRequest(user._id)}
+                className="text-xs px-3 py-1 rounded-full border border-primary text-primary hover:bg-primary hover:text-black transition"
+              >
+                Connect
+              </button>
             </div>
           </div>
         ))}

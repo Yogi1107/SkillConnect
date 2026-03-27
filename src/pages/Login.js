@@ -30,6 +30,7 @@ export default function Login({ setUser }) {
     }).then((res) => res.json()).then((data) => {
       setLoginData(data);
       if (data.success) {
+        localStorage.setItem("user", JSON.stringify(data.user));
         setIsLogin(true);
         setUser(data.user.name)
       }

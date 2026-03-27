@@ -21,6 +21,8 @@ const client = new MongoClient(uri);
 let usersCollection;
 let hackathonsCollection;
 let teamsCollection;
+let requestsCollection;
+let notificationsCollection;
 
 async function connectDB() {
   try {
@@ -30,6 +32,8 @@ async function connectDB() {
     usersCollection = db.collection("users");
     hackathonsCollection = db.collection("hackathons");
     teamsCollection = db.collection("teams");
+    requestsCollection = db.collection("requests");
+    notificationsCollection = db.collection("notifications");
 
     console.log("✅ Connected to MongoDB Atlas");
   } catch (error) {
@@ -309,7 +313,7 @@ app.post("/api/login", async (req, res) => {
         success: true,
         message: "Login successful",
         user: {
-          id: user._id,
+          _id: user._id,
           name: user.name,
           email: user.email
         }
@@ -420,6 +424,51 @@ app.get("/api/teams", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Error fetching teams"
+    });
+  }
+});
+
+app.post("/api/request/send", async (req, res) => {
+  const { fromUserId, toUserId } = req.body;
+
+  // 1. Save request
+  await requestsCollection.insertOne({
+    fromUserId,
+    toUserId,
+    type: "connection",
+    status: "pending",
+    createdAt: new Date()
+  });
+
+  // 2. Create notification
+  await notificationsCollection.insertOne({
+    userId: toUserId,
+    message: "You have a new connection request",
+    isRead: false,
+    createdAt: new Date()
+  });
+
+  res.json({ success: true });
+});
+
+app.get("/api/notifications/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const notifications = await notificationsCollection
+      .find({ toUserId: userId })
+      .toArray();
+
+    res.json({
+      success: true,
+      data: notifications
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching notifications"
     });
   }
 });

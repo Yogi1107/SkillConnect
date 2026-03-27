@@ -66,7 +66,7 @@ const Contact = () => {
             </h3>
             <div>
               <a
-                href="/product/request-devpost-for-teams-demo"
+                href="#"
                 className="bg-primary text-black px-4 py-2 rounded-lg text-center block"
               >
                 Request demo

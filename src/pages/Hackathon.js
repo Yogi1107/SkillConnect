@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Modal from "../components/Modal"; // make sure this exists
 
 const Hackathon = () => {
 
@@ -11,8 +13,12 @@ const Hackathon = () => {
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
 
+  const [hackathon, setHackathon] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+
   const navigate = useNavigate();
 
+  // Fetch all hackathons
   useEffect(() => {
     fetch("http://localhost:5000/api/hackathons")
       .then((res) => res.json())
@@ -23,32 +29,45 @@ const Hackathon = () => {
       .catch((err) => console.error(err));
   }, []);
 
-  // 🔍 Filtering Logic
+  // Open modal
+  const handleOpen = async (id) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/hackathons/${id}`
+      );
+
+      setHackathon(res.data.data);
+      setIsOpen(true);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Filtering logic
   useEffect(() => {
     let result = hackathons;
 
-    // Search
     if (search) {
       result = result.filter((h) =>
         h.title.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // Type Filter
     if (type !== "All") {
       result = result.filter((h) => h.type === type);
     }
 
-    // Location Filter
     if (location) {
       result = result.filter((h) =>
         h.location.toLowerCase().includes(location.toLowerCase())
       );
     }
 
-    // Date Filter (simple check)
     if (date) {
-      result = result.filter((h) => h.startDate >= date);
+      result = result.filter(
+        (h) => new Date(h.startDate) >= new Date(date)
+      );
     }
 
     setFiltered(result);
@@ -58,10 +77,9 @@ const Hackathon = () => {
   return (
     <div className="p-6 text-white">
 
-      {/* 🔍 SEARCH + FILTERS */}
+      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 justify-center">
 
-        {/* Search */}
         <input
           type="text"
           placeholder="Search hackathons..."
@@ -70,7 +88,6 @@ const Hackathon = () => {
           className="p-2 rounded bg-base border border-primary w-full md:w-[250px]"
         />
 
-        {/* Type */}
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
@@ -81,7 +98,6 @@ const Hackathon = () => {
           <option value="Offline">Offline</option>
         </select>
 
-        {/* Location */}
         <input
           type="text"
           placeholder="Location"
@@ -90,7 +106,6 @@ const Hackathon = () => {
           className="p-2 rounded bg-base border border-primary"
         />
 
-        {/* Date */}
         <input
           type="date"
           value={date}
@@ -100,7 +115,7 @@ const Hackathon = () => {
 
       </div>
 
-      {/* 🧾 CARDS */}
+      {/* Cards */}
       <div className="flex flex-wrap gap-6 justify-center">
 
         {filtered.length > 0 ? (
@@ -133,7 +148,8 @@ const Hackathon = () => {
                 </button>
 
                 <button
-                  className="flex-1 border border-primary py-2 hover:bg-primary"
+                  onClick={() => handleOpen(event._id)}
+                  className="flex-1 py-2 bg-base text-white border border-primary font-bold hover:bg-primary hover:text-base"
                 >
                   Explore
                 </button>
@@ -147,6 +163,11 @@ const Hackathon = () => {
         )}
 
       </div>
+
+      {/* ✅ Modal OUTSIDE map */}
+      {isOpen && hackathon && (
+        <Modal hackathon={hackathon} onClose={() => setIsOpen(false)} />
+      )}
 
     </div>
   );

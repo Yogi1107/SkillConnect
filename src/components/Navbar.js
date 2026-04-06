@@ -80,6 +80,33 @@ export default function Navbar() {
     }
   };
 
+  const handleInviteRespond = async (notification) => {
+    if (!user) return;
+
+    const { _id: notificationId, teamId, fromUserId } = notification;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/invite/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notificationId,
+          teamId,
+          userId: user._id, // current user who is responding
+          action: notification.action, // "accept" or "reject"
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Invite ${data.action}ed!`);
+        // Optionally refresh notifications or teams
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong responding to the invite.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
@@ -173,6 +200,23 @@ export default function Navbar() {
                               </button>
                               <button
                                 onClick={() => handleRespond(n.requestId, n._id, "reject")}
+                                className="flex items-center gap-1 bg-white/5 border border-muted/30 text-muted text-xs px-3 py-1.5 rounded-lg hover:border-red-400 hover:text-red-400 transition font-primary"
+                              >
+                                <FiXCircle size={12} /> Decline
+                              </button>
+                            </div>
+                          )}
+
+                          {n.type === "team_invite" && n.teamId && (
+                            <div className="flex gap-2 mt-1">
+                              <button
+                                onClick={() => handleInviteRespond({ ...n, action: "accept" })}
+                                className="flex items-center gap-1 bg-primary text-black text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-lime-300 transition font-primary"
+                              >
+                                <FiCheck size={12} /> Accept
+                              </button>
+                              <button
+                                onClick={() => handleInviteRespond({ ...n, action: "reject" })}
                                 className="flex items-center gap-1 bg-white/5 border border-muted/30 text-muted text-xs px-3 py-1.5 rounded-lg hover:border-red-400 hover:text-red-400 transition font-primary"
                               >
                                 <FiXCircle size={12} /> Decline

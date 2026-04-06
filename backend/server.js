@@ -527,13 +527,26 @@ app.post("/api/teams/:id/join", async (req, res) => {
 // Add this in server.js
 app.post("/api/teams", async (req, res) => {
   try {
-    const { teamName, projectName, description, requiredSkills, maxMembers, role, hackathonId, createdBy } = req.body;
+    delete req.body._id;
+
+    const {
+      teamName,
+      projectName,
+      description,
+      requiredSkills,
+      maxMembers,
+      role,
+      hackathonId,
+      createdBy
+    } = req.body;
 
     const newTeam = {
       teamName,
       projectName,
       description,
-      requiredSkills: requiredSkills.split(",").map(s => s.trim()),
+      requiredSkills: requiredSkills
+        ? requiredSkills.split(",").map(s => s.trim())
+        : [],
       maxMembers,
       role,
       hackathonId,
@@ -542,9 +555,15 @@ app.post("/api/teams", async (req, res) => {
       createdAt: new Date()
     };
 
-    await teamsCollection.insertOne(newTeam);
-    res.status(201).json({ success: true, data: newTeam });
+    const result = await teamsCollection.insertOne(newTeam);
+
+    res.status(201).json({
+      success: true,
+      data: { ...newTeam, _id: result.insertedId }
+    });
+
   } catch (err) {
+    console.error("TEAM CREATE ERROR:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -620,6 +639,55 @@ app.get("/api/requests/pending/:userId", async (req, res) => {
     }).toArray();
 
     res.json({ success: true, data: pending });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+app.post("/api/invite/send", async (req, res) => {
+  try {
+    const { fromUserId, fromUserName, toUserId, teamName, teamId } = req.body;
+
+    if (!fromUserId || !toUserId || !teamName || !teamId) {
+      return res.status(400).json({ success: false, message: "Missing fields" });
+    }
+
+    const notification = {
+      toUserId: toUserId.toString(),
+      message: `${fromUserName} invited you to join team "${teamName}"`,
+      type: "team_invite",              // 👈 different type
+      teamId: teamId.toString(),
+      fromUserId: fromUserId.toString(),
+      fromUserName,
+      isRead: false,
+      createdAt: new Date()
+    };
+
+    await notificationsCollection.insertOne(notification);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Invite error:", err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+app.post("/api/invite/respond", async (req, res) => {
+  try {
+    const { notificationId, teamId, userId, action } = req.body;
+
+    if (action === "accept") {
+      // Add user to team members
+      await teamsCollection.updateOne(
+        { _id: new ObjectId(teamId) },
+        { $addToSet: { members: userId } }
+      );
+    }
+
+    // Delete the notification either way
+    await notificationsCollection.deleteOne({
+      _id: new ObjectId(notificationId)
+    });
+
+    res.json({ success: true, action });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

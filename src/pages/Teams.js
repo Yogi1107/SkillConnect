@@ -12,6 +12,7 @@ const Discover = () => {
   const [teams, setTeams] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [hackathonData, setHackathonData] = useState(null);
+  const [createdTeam, setCreatedTeam] = useState(null);
 
   const [formData, setFormData] = useState({
     teamName: "",
@@ -125,17 +126,21 @@ const Discover = () => {
     ? basePool.filter(u => roleComplement[formData.role](u))
     : basePool;
 
-  const sendInvite = async (user) => {
-    if (!currentUser) return;
-    await fetch("http://localhost:5000/api/request/send", {
+  const sendInvite = async (user, team) => {
+    if (!currentUser || !team) return;
+
+    await fetch("http://localhost:5000/api/invite/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fromUserId: myId,
         fromUserName: currentUser.name,
         toUserId: (user._id?.$oid || user._id)?.toString(),
+        teamName: team.teamName,
+        teamId: team._id
       })
     });
+
     alert(`Invite sent to ${user.name}`);
   };
 
@@ -149,13 +154,23 @@ const Discover = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          teamName: formData.teamName,
+          projectName: formData.projectName,
+          description: formData.description,
+          requiredSkills: formData.requiredSkills,
           maxMembers: formData.maxMembers || 4,
+          role: formData.role,
           hackathonId,
-          createdBy: myId,
+          createdBy: myId
         })
       });
       const teamData = await teamRes.json();
+      if (teamData.success) {
+        const newTeam = teamData.data;  // ← grab created team
+
+        setTeams(prev => [...prev, newTeam]);  // add to teams list
+        setCreatedTeam(newTeam);               // optional, if you have a separate state for inviting
+      }
       if (!teamData.success) return alert("Failed to create team: " + teamData.message);
 
       const regRes = await fetch(`http://localhost:5000/api/hackathons/${hackathonId}/register`, {
@@ -337,8 +352,8 @@ const Discover = () => {
                       </div>
                     </div>
                     <button
-                      disabled={!currentUser}
-                      onClick={() => sendInvite(user)}
+                      disabled={!currentUser || !createdTeam}
+                      onClick={() => sendInvite(user, createdTeam)}
                       className="ml-2 bg-primary text-black px-3 py-1 rounded font-semibold hover:opacity-80 disabled:opacity-40 text-xs"
                     >
                       Invite

@@ -12,8 +12,12 @@ import Hackathon from './pages/Hackathon';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Help from './pages/Help';
+import HostDetails from './pages/HostDetails';
+import HostRegistration from './pages/HostRegistration';
+import HostLogin from './pages/HostLogin';
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import HostDashboard from './pages/HostDashboard';
 
 function App() {
   // ← CHANGE 1: Initialize from localStorage so refresh doesn't reset user to null
@@ -35,6 +39,12 @@ function App() {
               {/* CHANGE 2: pass full user object not just name */}
               <Route path="/login" element={<Login setUser={setUser} />} />
               <Route path="/register" element={<Register />} />
+
+              <Route path="/host" element={<HostDetails />} />
+              <Route path="/host-register" element={<HostRegistration />} />
+              <Route path="/host-login" element={<HostLogin />} />
+              <Route path="/host-dashboard" element={<HostDashboard />} />
+              
 
               <Route path="/hackathon-register" element={<Navigate to="/explore-hackathons" replace />} />
 

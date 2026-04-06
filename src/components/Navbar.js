@@ -10,12 +10,12 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [host, setHost] = useState(null)
 
   const navigate = useNavigate();
 
   const menuItems = [
     { name: "My Profile", path: "/profile" },
-    { name: "Settings", path: "/settings" },
     { name: "Logout", path: "/login", action: "logout" }  // ← tag logout
   ];
 
@@ -38,7 +38,8 @@ export default function Navbar() {
   useEffect(() => {
     const syncUser = () => {
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      setUser(storedUser);
+      const storedHost = JSON.parse(localStorage.getItem("HostUser"));
+      setUser(storedUser || storedHost);
     };
 
     // Run once on mount

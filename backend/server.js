@@ -24,6 +24,7 @@ let hackathonsCollection;
 let teamsCollection;
 let requestsCollection;
 let notificationsCollection;
+let hostsCollection;
 
 async function connectDB() {
   try {
@@ -35,6 +36,8 @@ async function connectDB() {
     teamsCollection = db.collection("teams");
     requestsCollection = db.collection("requests");
     notificationsCollection = db.collection("notifications");
+    hostsCollection = db.collection("hosts");
+
 
     console.log("✅ Connected to MongoDB Atlas");
   } catch (error) {
@@ -164,7 +167,25 @@ app.get("/api/hackathons/:id", async (req, res) => {
     });
   }
 });
+app.post("/api/hackathons", async (req, res) => {
+  try {
+    const newHackathon = req.body;
 
+    // Insert into MongoDB
+    const result = await hackathonsCollection.insertOne(newHackathon);
+
+    res.json({
+      success: true,
+      data: { ...newHackathon, _id: result.insertedId }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create hackathon"
+    });
+  }
+});
 app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password, githubId } = req.body;
@@ -370,6 +391,7 @@ app.get("/api/hackathons", async (req, res) => {
       message: "Server error"
     });
   }
+
 });
 
 // Promotional Hackathons
@@ -698,6 +720,111 @@ app.post("/api/invite/respond", async (req, res) => {
 
     res.json({ success: true, action });
   } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+// -----------------------------
+// Host Registration Route
+// -----------------------------
+app.post("/api/host-register", async (req, res) => {
+  try {
+    const { name, email, password, org } = req.body;
+
+    // 1. Validation
+    if (!name || !email || !password || !org) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields (Organization, Name, Email, Password) are required."
+      });
+    }
+
+    // 2. Check if Host already exists
+    const existingHost = await hostsCollection.findOne({ email });
+    if (existingHost) {
+      return res.status(409).json({
+        success: false,
+        message: "A host account with this email already exists."
+      });
+    }
+
+    // 3. Hash Password
+    const bcrypt = await import("bcrypt");
+    const hashedPassword = await bcrypt.default.hash(password, 10);
+
+    // 4. Create Host Object
+    const newHost = {
+      name,
+      email,
+      password: hashedPassword,
+      organization: org,
+      role: "host",
+      createdAt: new Date()
+    };
+
+    // 5. Save to "hosts" collection
+    await hostsCollection.insertOne(newHost);
+
+    console.log(`Host Created: ${org} (${email})`);
+
+    res.status(201).json({
+      success: true,
+      message: "Host registration successful"
+    });
+
+  } catch (error) {
+    console.error("Host Register Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Registration failed: " + error.message
+    });
+  }
+});
+// Host Login Route
+// -----------------------------
+app.post("/api/host-login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const bcrypt = await import("bcrypt");
+
+    // 1. Look specifically in the hostsCollection
+    const host = await hostsCollection.findOne({ email });
+
+    if (host) {
+      // 2. Compare the plain text password with the hashed password in DB
+      const isMatch = await bcrypt.default.compare(password, host.password);
+
+      if (isMatch) {
+        return res.status(200).json({
+          success: true,
+          message: "Host login successful",
+          host: {
+            id: host._id,
+            name: host.name,
+            org: host.organization,
+            role: "host"
+          }
+        });
+      }
+    }
+
+    return res.status(401).json({ success: false, message: "Invalid email or password" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error during host login" });
+  }
+});
+app.get("/api/hackathons/:hostid", async (req, res) => {
+  const hostId = req.params.hostid;
+
+  try {
+    // Assuming you are using Mongoose and your Hackathon model
+    const hackathons = await hackathonsCollection.find({
+      "hostOrganization.organizerId": hostId
+    });
+
+    res.json({ success: true, data: hackathons });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

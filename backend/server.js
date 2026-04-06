@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import express from "express";
 import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
@@ -291,7 +292,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// Login
+// Login route
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -300,21 +301,29 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password required" });
     }
 
-    const user = await usersCollection.findOne({ email, password });
-
-    if (user) {
-      return res.status(200).json({
-        success: true,
-        message: "Login successful",
-        user: {
-          _id: user._id.toString(),   // ← THIS is the fix
-          name: user.name,
-          email: user.email
-        }
-      });
+    // Find the user by email
+    const user = await usersCollection.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    return res.status(401).json({ success: false, message: "Invalid credentials" });
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, user.password); // user.password is hashed
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    // Return user info (without password)
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email
+      }
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });

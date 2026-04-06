@@ -11,6 +11,7 @@ import Explore from './pages/Explore';
 import Hackathon from './pages/Hackathon';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Help from './pages/Help';
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -67,6 +68,7 @@ function App() {
 
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/help" element={<Help/>} />
               <Route path='/explore-hackathons' element={<Hackathon />} />
 
             </Routes>

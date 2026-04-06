@@ -56,7 +56,7 @@ const Layout = ({ children }) => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/" className="hover:text-primary transition">
+                  <Link to="/help" className="hover:text-primary transition">
                     Help
                   </Link>
                 </li>

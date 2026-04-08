@@ -14,6 +14,7 @@ const Home = () => {
 
   const filters = ["Offline", "Online", "Type", "Date", "Location"];
   const [selectedMode, setSelectedMode] = useState(null);
+  
 
   const [isOpen, setIsOpen] = useState(false);
   const [hackathon, setHackathon] = useState(null);
@@ -63,6 +64,11 @@ const Home = () => {
 
   }, [hackathons]);
 
+  const filteredHackathons = selectedMode
+  ? hackathons.filter(
+      (event) => event.mode.toLowerCase() === selectedMode.toLowerCase()
+    )
+  : hackathons;
 
   return (
     <div className="p-10 min-h-screen align-center font-primary">
@@ -102,34 +108,33 @@ const Home = () => {
 
       </div>
 
-      <DemoSection/>
+      <DemoSection />
       <StepSection />
 
       {/* Filters */}
-      <div className="flex items-center justify-center gap-10">
-
+      {/* Filters */}
+      <div className="flex items-center justify-center gap-10 mb-5">
         <div className="flex gap-3 bg-gray-200 p-2 rounded-lg">
           {["Offline", "Online"].map((mode) => (
             <button
               key={mode}
               onClick={() => setSelectedMode(mode)}
               className={`p-3 font-bold rounded-md transition transform hover:scale-105
-            ${selectedMode === mode ? "bg-primary text-base" : "bg-white"}`}
+          ${selectedMode === mode ? "bg-primary text-base" : "bg-white"}`}
             >
               {mode}
             </button>
           ))}
         </div>
 
-        {filters.slice(2).map((value, index) => (
+        {filters && filters.length > 2 && filters.slice(2).map((value) => (
           <button
-            key={index}
+            key={value}
             className="bg-primary p-3 font-bold rounded-md transition transform hover:scale-105"
           >
             {value}
           </button>
         ))}
-
       </div>
 
       {/* Heading */}
@@ -139,8 +144,8 @@ const Home = () => {
 
       {/* Hackathon Cards */}
       <div className="flex flex-wrap gap-6 justify-center font-primary">
-
-        {hackathons.map((event) => (
+        
+        {filteredHackathons.map((event) => (
 
           <div
             key={event._id}

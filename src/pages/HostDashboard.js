@@ -56,7 +56,7 @@ const HostDashboard = () => {
             location: formData.location,
             image: formData.image || "https://images.unsplash.com/photo-1639762681485-074b7f938ba0", // default image
             hostOrganization: {
-                name: host.organizationName || "Blockchain India", // you can take it from host object
+                name: host.org || "Blockchain India", // you can take it from host object
                 organizerId: host.id
             },
             status: "approved",

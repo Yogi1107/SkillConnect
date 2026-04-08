@@ -600,29 +600,40 @@ app.post("/api/teams", async (req, res) => {
 });
 
 
-// Hackathon registration
+// Hackathon registration (updated for team support)
 app.post("/api/hackathons/:id/register", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, memberIds } = req.body; // memberIds: array of team members
     const hackathonId = req.params.id;
 
-    // Guard against undefined/invalid IDs
+    // Guard against invalid IDs
     if (!hackathonId || hackathonId === "undefined") {
       return res.status(400).json({ success: false, message: "Invalid hackathon ID" });
     }
-    if (!userId || userId === "undefined") {
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
+
+    // If memberIds are provided, use them; otherwise, fall back to single userId
+    let participantsToAdd = [];
+    if (Array.isArray(memberIds) && memberIds.length > 0) {
+      participantsToAdd = memberIds;
+    } else if (userId && userId !== "undefined") {
+      participantsToAdd = [userId];
+    } else {
+      return res.status(400).json({ success: false, message: "No valid user(s) provided" });
     }
 
+    // Update hackathon participants
     await hackathonsCollection.updateOne(
       { _id: new ObjectId(hackathonId) },
-      { $addToSet: { participants: userId } }  // store userId as string, no ObjectId wrap
+      { $addToSet: { participants: { $each: participantsToAdd } } }
     );
 
-    await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },           // userId from MongoDB is already a valid hex string
-      { $addToSet: { hackathons: hackathonId } }
-    );
+    // Update each user’s registered hackathons
+    for (const id of participantsToAdd) {
+      await usersCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $addToSet: { hackathons: hackathonId } }
+      );
+    }
 
     res.json({ success: true, message: "Registered for hackathon" });
   } catch (err) {

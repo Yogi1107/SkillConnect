@@ -9,7 +9,7 @@ const DemoSection = () => {
 
       <div className="w-full flex flex-col md:flex-row items-center gap-12">
 
-        {/* 🎥 VIDEO */}
+        {/* VIDEO */}
         <div className="w-full md:w-1/2 relative">
 
           <div className="absolute inset-0 bg-primary opacity-20 blur-2xl rounded-3xl"></div>
@@ -28,7 +28,7 @@ const DemoSection = () => {
           </div>
         </div>
 
-        {/* 📝 CONTENT */}
+        {/* CONTENT */}
         <div className="w-full md:w-1/2">
 
           <h2 className="text-4xl md:text-5xl font-extrabold text-primary mb-6 leading-tight">

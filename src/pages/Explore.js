@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CiFilter } from "react-icons/ci";
 import axios from "axios";
-import UserModal from '../components/UserModal';
+import UserModal from "../components/UserModal";
 
 const Explore = () => {
   const [isFilterOpen, openFilter] = useState(false);
@@ -22,33 +22,39 @@ const Explore = () => {
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
-  // Fetch current user's full profile + their connections + pending requests
+  // Fetch current user + connections
   useEffect(() => {
     if (!currentUser?.email) return;
 
     const init = async () => {
       try {
-        // Get full profile
-        const meRes = await axios.get(`http://localhost:5000/api/me?email=${currentUser.email}`);
+        const meRes = await axios.get(
+          `http://localhost:5000/api/me?email=${currentUser.email}`
+        );
         const me = meRes.data;
         setCurrentMe(me);
 
         const userId = (me._id?.$oid || me._id)?.toString();
 
-        // Get accepted connections
-        const connRes = await axios.get(`http://localhost:5000/api/connections/${userId}`);
+        const connRes = await axios.get(
+          `http://localhost:5000/api/connections/${userId}`
+        );
         if (connRes.data.success) {
-          const ids = connRes.data.data.map(u => (u._id?.$oid || u._id)?.toString());
+          const ids = connRes.data.data.map((u) =>
+            (u._id?.$oid || u._id)?.toString()
+          );
           setConnectedIds(new Set(ids));
         }
 
-        // Get pending outgoing requests
-        const pendingRes = await axios.get(`http://localhost:5000/api/requests/pending/${userId}`);
+        const pendingRes = await axios.get(
+          `http://localhost:5000/api/requests/pending/${userId}`
+        );
         if (pendingRes.data.success) {
-          const ids = pendingRes.data.data.map(r => r.toUserId?.toString());
+          const ids = pendingRes.data.data.map((r) =>
+            r.toUserId?.toString()
+          );
           setPendingIds(new Set(ids));
         }
-
       } catch (err) {
         console.error(err);
       }
@@ -71,30 +77,22 @@ const Explore = () => {
     fetchUsers();
   }, []);
 
-  const toggleRole = (role) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
-  };
-
-  const toggleSkill = (skill) => {
-    setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
-    );
-  };
-
-  const applyFilters = () => {
+  // 🔥 AUTO FILTERING (MAIN FIX)
+  useEffect(() => {
     let temp = [...users];
+
     if (search) {
       temp = temp.filter((user) =>
-        user.name.toLowerCase().includes(search.toLowerCase())
+        user.name?.toLowerCase().includes(search.toLowerCase())
       );
     }
+
     if (selectedRoles.length > 0) {
       temp = temp.filter((user) =>
         user.roles?.some((r) => selectedRoles.includes(r.role))
       );
     }
+
     if (selectedSkills.length > 0) {
       temp = temp.filter((user) =>
         [
@@ -104,7 +102,24 @@ const Explore = () => {
         ].some((skill) => selectedSkills.includes(skill))
       );
     }
+
     setFilteredUsers(temp);
+  }, [search, selectedRoles, selectedSkills, users]);
+
+  const toggleRole = (role) => {
+    setSelectedRoles((prev) =>
+      prev.includes(role)
+        ? prev.filter((r) => r !== role)
+        : [...prev, role]
+    );
+  };
+
+  const toggleSkill = (skill) => {
+    setSelectedSkills((prev) =>
+      prev.includes(skill)
+        ? prev.filter((s) => s !== skill)
+        : [...prev, skill]
+    );
   };
 
   const resetFilters = () => {
@@ -116,7 +131,9 @@ const Explore = () => {
 
   const handleUserProfile = async (email) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/users?email=${email}`);
+      const res = await axios.get(
+        `http://localhost:5000/api/users?email=${email}`
+      );
       setSelectedUser(res.data);
       setIsUserModalOpen(true);
     } catch (err) {
@@ -124,7 +141,7 @@ const Explore = () => {
     }
   };
 
-  const sendRequest = async (toUserId, toUserName) => {
+  const sendRequest = async (toUserId) => {
     try {
       if (!currentMe) {
         alert("You must be logged in to connect.");
@@ -137,9 +154,7 @@ const Explore = () => {
         toUserId: toUserId.toString(),
       });
 
-      // Optimistically update pending state so button changes immediately
-      setPendingIds(prev => new Set([...prev, toUserId.toString()]));
-
+      setPendingIds((prev) => new Set([...prev, toUserId.toString()]));
     } catch (err) {
       console.error(err);
       alert("Failed to send request.");
@@ -155,7 +170,6 @@ const Explore = () => {
 
   return (
     <div className="text-white p-5">
-
       {/* Search + Filter */}
       <div className="flex w-full items-center justify-center gap-5">
         <div className="bg-base w-[50%]">
@@ -167,6 +181,7 @@ const Explore = () => {
             className="bg-base w-full p-4 rounded-3xl border-2 border-primary"
           />
         </div>
+
         <CiFilter
           className="text-4xl cursor-pointer hover:text-primary"
           onClick={() => openFilter(!isFilterOpen)}
@@ -179,7 +194,12 @@ const Explore = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <h3 className="font-semibold mb-3">Role</h3>
-              {["Frontend Developer", "Backend Developer", "ML/AI Engineer", "UI/UX Designer"].map((role) => (
+              {[
+                "Frontend Developer",
+                "Backend Developer",
+                "ML/AI Engineer",
+                "UI/UX Designer",
+              ].map((role) => (
                 <label key={role} className="flex gap-2">
                   <input
                     type="checkbox"
@@ -190,26 +210,35 @@ const Explore = () => {
                 </label>
               ))}
             </div>
+
             <div>
               <h3 className="font-semibold mb-3">Skills</h3>
               <div className="flex flex-wrap gap-2">
-                {["React", "Node.js", "Python", "Flask", "Docker"].map((skill) => (
-                  <span
-                    key={skill}
-                    onClick={() => toggleSkill(skill)}
-                    className={`border px-3 py-1 rounded-full cursor-pointer ${
-                      selectedSkills.includes(skill) ? "bg-primary text-black" : ""
-                    }`}
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {["React", "Node.js", "Python", "Flask", "Docker"].map(
+                  (skill) => (
+                    <span
+                      key={skill}
+                      onClick={() => toggleSkill(skill)}
+                      className={`border px-3 py-1 rounded-full cursor-pointer ${selectedSkills.includes(skill)
+                          ? "bg-primary text-black"
+                          : ""
+                        }`}
+                    >
+                      {skill}
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>
+
           <div className="flex justify-end gap-4 mt-6">
-            <button onClick={resetFilters} className="px-5 py-2 border border-muted">Reset</button>
-            <button onClick={applyFilters} className="px-5 py-2 bg-primary text-black font-bold">Apply Filters</button>
+            <button
+              onClick={resetFilters}
+              className="px-5 py-2 border border-muted"
+            >
+              Reset
+            </button>
           </div>
         </div>
       )}
@@ -220,7 +249,6 @@ const Explore = () => {
           const userId = (user._id?.$oid || user._id)?.toString();
           const myId = (currentMe?._id?.$oid || currentMe?._id)?.toString();
 
-          // Don't show a connect button for yourself
           const isSelf = userId === myId;
           const status = getConnectionStatus(userId);
 
@@ -230,20 +258,30 @@ const Explore = () => {
               className="bg-gradient-to-br from-base to-[#1a1a1a] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl hover:scale-[1.03] transition-all duration-300"
             >
               <div className="flex items-center gap-4 mb-4">
-                <img src={user.avatar} alt="avatar" className="w-14 h-14 rounded-full border-2 border-primary" />
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  className="w-14 h-14 rounded-full border-2 border-primary"
+                />
                 <div>
-                  <h2 className="text-lg font-bold text-white">{user.name}</h2>
+                  <h2 className="text-lg font-bold">{user.name}</h2>
                   <p className="text-xs text-gray-400">{user.email}</p>
                 </div>
               </div>
 
               <div className="mt-3">
-                <p className="text-sm font-semibold text-primary mb-1">Skills</p>
+                <p className="text-sm font-semibold text-primary mb-1">
+                  Skills
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {[...(user.skills?.languages || []), ...(user.skills?.frameworks || [])]
+                  {[...(user.skills?.languages || []),
+                  ...(user.skills?.frameworks || [])]
                     .slice(0, 6)
                     .map((skill, i) => (
-                      <span key={i} className="px-2 py-1 text-xs rounded-full bg-[#2b2b2b] text-white border border-[#3a3a3a]">
+                      <span
+                        key={i}
+                        className="px-2 py-1 text-xs rounded-full bg-[#2b2b2b]"
+                      >
                         {skill}
                       </span>
                     ))}
@@ -251,37 +289,38 @@ const Explore = () => {
               </div>
 
               <div className="mt-4">
-                <p className="text-sm font-semibold text-primary">Top Role</p>
-                <p className="text-white text-sm mt-1">{user.roles?.[0]?.role || "Not analyzed"}</p>
+                <p className="text-sm font-semibold text-primary">
+                  Top Role
+                </p>
+                <p className="text-sm mt-1">
+                  {user.roles?.[0]?.role || "Not analyzed"}
+                </p>
               </div>
 
               <div className="mt-5 flex justify-between items-center">
-                <span className="text-xs text-gray-400">🚀 Ready for Hackathon</span>
-
                 <button
                   onClick={() => handleUserProfile(user.email)}
-                  className="text-xs px-3 py-1 rounded-full bg-primary text-black font-semibold hover:opacity-80"
+                  className="text-xs px-3 py-1 rounded-full bg-primary text-black"
                 >
                   View Profile
                 </button>
 
-                {/* Connection Button — changes based on status */}
                 {!isSelf && (
                   <>
                     {status === "connected" && (
-                      <span className="text-xs px-3 py-1 rounded-full border border-green-500 text-green-400 cursor-default">
+                      <span className="text-xs text-green-400">
                         ✓ Connected
                       </span>
                     )}
                     {status === "pending" && (
-                      <span className="text-xs px-3 py-1 rounded-full border border-yellow-500 text-yellow-400 cursor-default">
+                      <span className="text-xs text-yellow-400">
                         ⏳ Pending
                       </span>
                     )}
                     {status === "none" && (
                       <button
-                        onClick={() => sendRequest(userId, user.name)}
-                        className="text-xs px-3 py-1 rounded-full border border-primary text-primary hover:bg-primary hover:text-black transition"
+                        onClick={() => sendRequest(userId)}
+                        className="text-xs px-3 py-1 border border-primary text-primary"
                       >
                         Connect
                       </button>
@@ -295,9 +334,11 @@ const Explore = () => {
       </div>
 
       {isUserModalOpen && selectedUser && (
-        <UserModal user={selectedUser} onClose={() => setIsUserModalOpen(false)} />
+        <UserModal
+          user={selectedUser}
+          onClose={() => setIsUserModalOpen(false)}
+        />
       )}
-
     </div>
   );
 };

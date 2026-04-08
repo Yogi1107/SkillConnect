@@ -33,25 +33,25 @@ const Modal = ({ hackathon, onClose }) => {
           {/* Info Grid */}
           <div className="grid grid-cols-2 gap-4 text-sm">
 
-            <p><strong>📍 Location:</strong> {hackathon.location}</p>
+            <p><strong>Location:</strong> {hackathon.location}</p>
 
-            <p><strong>🌐 Mode:</strong> {hackathon.mode}</p>
+            <p><strong>Mode:</strong> {hackathon.mode}</p>
 
             <p>
-              <strong>📅 Dates:</strong>  
+              <strong>Dates:</strong>  
               {hackathon.startDate} → {hackathon.endDate}
             </p>
 
             <p>
-              <strong>👥 Team Size:</strong> Max {hackathon.maxTeamSize}
+              <strong>Team Size:</strong> Max {hackathon.maxTeamSize}
             </p>
 
             <p>
-              <strong>🏢 Organizer:</strong> {hackathon.hostOrganization?.name}
+              <strong>Organizer:</strong> {hackathon.hostOrganization?.name}
             </p>
 
             <p>
-              <strong>📊 Status:</strong> {hackathon.status}
+              <strong>Status:</strong> {hackathon.status}
             </p>
 
           </div>

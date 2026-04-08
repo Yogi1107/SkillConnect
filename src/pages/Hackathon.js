@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Modal from "../components/Modal"; // make sure this exists
+import Modal from "../components/Modal";
 
 const Hackathon = () => {
 
@@ -9,7 +9,7 @@ const Hackathon = () => {
   const [filtered, setFiltered] = useState([]);
 
   const [search, setSearch] = useState("");
-  const [type, setType] = useState("All");
+  const [type, setType] = useState("All"); // type instead of mode
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
 
@@ -20,54 +20,59 @@ const Hackathon = () => {
 
   // Fetch all hackathons
   useEffect(() => {
-    fetch("http://localhost:5000/api/hackathons")
-      .then((res) => res.json())
-      .then((data) => {
-        setHackathons(data.data || []);
-        setFiltered(data.data || []);
-      })
-      .catch((err) => console.error(err));
+    const fetchHackathons = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/hackathons");
+        setHackathons(res.data.data || []);
+        setFiltered(res.data.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchHackathons();
   }, []);
 
   // Open modal
   const handleOpen = async (id) => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/hackathons/${id}`
-      );
-
+      const res = await axios.get(`http://localhost:5000/api/hackathons/${id}`);
       setHackathon(res.data.data);
       setIsOpen(true);
-
     } catch (err) {
       console.error(err);
     }
   };
 
+  // Reset all filters
+  const resetFilters = () => {
+    setSearch("");
+    setType("All");
+    setLocation("");
+    setDate("");
+  };
+
   // Filtering logic
   useEffect(() => {
-    let result = hackathons;
+    let result = [...hackathons];
 
     if (search) {
       result = result.filter((h) =>
-        h.title.toLowerCase().includes(search.toLowerCase())
+        h.title?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     if (type !== "All") {
-      result = result.filter((h) => h.type === type);
+      result = result.filter((h) => h.mode?.toLowerCase() === type.toLowerCase());
     }
 
     if (location) {
       result = result.filter((h) =>
-        h.location.toLowerCase().includes(location.toLowerCase())
+        h.location?.toLowerCase().includes(location.toLowerCase())
       );
     }
 
     if (date) {
-      result = result.filter(
-        (h) => new Date(h.startDate) >= new Date(date)
-      );
+      result = result.filter(h => new Date(h.startDate) >= new Date(date));
     }
 
     setFiltered(result);
@@ -78,7 +83,7 @@ const Hackathon = () => {
     <div className="p-6 text-white">
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 justify-center">
+      <div className="flex flex-col md:flex-row gap-4 mb-4 justify-center items-center">
 
         <input
           type="text"
@@ -113,19 +118,22 @@ const Hackathon = () => {
           className="p-2 rounded bg-base border border-primary"
         />
 
+        <button
+          onClick={resetFilters}
+          className="p-2 rounded bg-red-500 text-white font-bold hover:bg-red-600 transition"
+        >
+          Reset Filters
+        </button>
       </div>
 
       {/* Cards */}
       <div className="flex flex-wrap gap-6 justify-center">
-
         {filtered.length > 0 ? (
           filtered.map((event) => (
-
             <div
               key={event._id}
               className="w-[320px] border border-primary rounded-xl overflow-hidden hover:-translate-y-1 transition"
             >
-
               <img
                 src={event.image}
                 alt={event.title}
@@ -154,21 +162,17 @@ const Hackathon = () => {
                   Explore
                 </button>
               </div>
-
             </div>
-
           ))
         ) : (
-          <p>No hackathons found 😢</p>
+          <p>No hackathons found!!</p>
         )}
-
       </div>
 
-      {/* ✅ Modal OUTSIDE map */}
+      {/* Modal OUTSIDE map */}
       {isOpen && hackathon && (
         <Modal hackathon={hackathon} onClose={() => setIsOpen(false)} />
       )}
-
     </div>
   );
 };

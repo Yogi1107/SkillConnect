@@ -63,7 +63,7 @@ const UserModal = ({ user, onClose }) => {
 
         {/* Footer */}
         <div className="mt-6 text-sm text-gray-400">
-          🚀 Ready for hackathons & team collaboration
+          Ready for hackathons & team collaboration
         </div>
 
       </div>

@@ -32,7 +32,7 @@ const StepsSection = () => {
       {/* Timeline */}
       <div className="relative">
 
-        {/* 🔥 Animated Dashed Line (ONLY DESKTOP) */}
+        {/* Animated Dashed Line (ONLY DESKTOP) */}
         <motion.div
           initial={{ width: 0 }}
           whileInView={{ width: "100%" }}
@@ -54,7 +54,7 @@ const StepsSection = () => {
               className="relative flex flex-col items-center"
             >
 
-              {/* 🔢 Circle with Pulse */}
+              {/* Circle with Pulse */}
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}

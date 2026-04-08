@@ -34,17 +34,17 @@ export default function HostDetails() {
         </div>
 
         {/* Login Card */}
-        <div className="p-8 border border-secondary/30 rounded-2xl bg-black/40 hover:border-secondary transition-all flex flex-col items-center text-center">
-          <div className="bg-secondary/10 p-4 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="p-8 border border-primary/30 rounded-2xl bg-black/40 hover:border-primary transition-all flex flex-col items-center text-center">
+          <div className="bg-primary/10 p-4 rounded-full mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
-          <p className="text-gray-400 mb-6 text-sm">Access your organizer dashboard and manage active hackathons.</p>
+          <p className="text-primary-400 mb-6 text-sm">Access your organizer dashboard and manage active hackathons.</p>
           <button 
             onClick={() => navigate("/host-login")}
-            className="w-full py-3 border border-secondary text-secondary font-bold rounded-lg hover:bg-secondary hover:text-black transition-all"
+            className="w-full py-3 bg-primary text-black font-bold rounded-lg hover:scale-105 transition-transform"
           >
             Host Login
           </button>

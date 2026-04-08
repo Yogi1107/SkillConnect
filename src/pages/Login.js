@@ -131,7 +131,7 @@ export default function Login({ setUser }) {
 
             </form>
 
-            {/* Divider */}
+            {/* Divider
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-muted/20" />
               <span className="text-[10px] tracking-[2px] text-muted uppercase font-primary">
@@ -140,7 +140,7 @@ export default function Login({ setUser }) {
               <div className="flex-1 h-px bg-muted/20" />
             </div>
 
-            {/* Social buttons */}
+            
             <div className="grid grid-cols-4 gap-2 mb-6">
               {[
                 { icon: <FaGithub />, label: "GitHub" },
@@ -156,10 +156,10 @@ export default function Login({ setUser }) {
                   {icon}
                 </button>
               ))}
-            </div>
+            </div> */}
 
             {/* Register link */}
-            <p className="text-center text-xs text-muted font-primary">
+            <p className="text-center text-xs mt-5 text-muted font-primary">
               No account?{" "}
               <Link to="/register" className="text-primary hover:underline font-medium">
                 Register here

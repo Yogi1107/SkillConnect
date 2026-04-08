@@ -1,9 +1,11 @@
 import React from 'react'
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Discover = () => {
   const { hackathonId } = useParams();
+  const navigate = useNavigate();
+
   const [isJoinClicked, clickJoin] = useState(false);
   const [inviteTab, setInviteTab] = useState("network"); // "network" | "all"
 
@@ -157,7 +159,9 @@ const Discover = () => {
           teamName: formData.teamName,
           projectName: formData.projectName,
           description: formData.description,
-          requiredSkills: formData.requiredSkills,
+          requiredSkills: Array.isArray(formData.requiredSkills)
+            ? formData.requiredSkills.join(", ")
+            : formData.requiredSkills || "",
           maxMembers: formData.maxMembers || 4,
           role: formData.role,
           hackathonId,
@@ -166,10 +170,9 @@ const Discover = () => {
       });
       const teamData = await teamRes.json();
       if (teamData.success) {
-        const newTeam = teamData.data;  // ← grab created team
-
-        setTeams(prev => [...prev, newTeam]);  // add to teams list
-        setCreatedTeam(newTeam);               // optional, if you have a separate state for inviting
+        const newTeam = teamData.data;
+        setTeams(prev => [...prev, newTeam]);
+        setCreatedTeam(newTeam);
       }
       if (!teamData.success) return alert("Failed to create team: " + teamData.message);
 
@@ -197,12 +200,25 @@ const Discover = () => {
     }
   };
 
-  const handleJoinTeam = async (teamId) => {
-    await fetch(`http://localhost:5000/api/teams/${teamId}/join`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: myId })
-    });
+  const handleJoinTeam = async (team) => {
+    if (!currentUser) return alert("You must be logged in.");
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/teams/${team._id}/request-join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: myId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Join request sent to the team creator!");
+      } else {
+        alert(data.message || "Failed to send join request.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send join request.");
+    }
   };
 
   if (!hackathonId) {
@@ -219,7 +235,7 @@ const Discover = () => {
   return (
     <div className="flex flex-col gap-4 px-4 mt-4 text-sm">
 
-      {/* CREATE / JOIN tabs */}
+      {/* CREATE / JOIN / AUTO MATCH tabs */}
       <div className="flex gap-3">
         <button
           className={`h-9 px-4 text-sm font-medium rounded hover:opacity-80 ${!isJoinClicked ? "bg-primary text-black" : "border border-primary text-primary"}`}
@@ -232,6 +248,12 @@ const Discover = () => {
           onClick={() => clickJoin(true)}
         >
           JOIN
+        </button>
+        <button
+          className="h-9 px-4 text-sm font-medium rounded hover:opacity-80 border border-primary text-primary hover:bg-primary hover:text-black transition-all"
+          onClick={() => navigate(`/discover/${hackathonId}/automatch`)}
+        >
+          ⚡ AUTO MATCH
         </button>
       </div>
 
@@ -367,47 +389,80 @@ const Discover = () => {
 
       ) : (
         /* JOIN tab */
-        <div className="flex flex-col items-center mt-10 text-white w-full">
+        <div className="flex flex-col items-center mt-6 text-white w-full gap-3">
+          <h1 className='text-3xl text-white font-bold mb-1'>Teams Registered for the hackathon</h1>
           {teams.length === 0 ? (
-            <p>No teams available</p>
+            <p className="text-gray-400 text-sm">No teams available</p>
           ) : (
             teams.map((t) => {
               const spotsLeft = t.maxMembers - (t.members?.length || 1);
+              const isMember = t.members?.some(m => (m?.$oid || m)?.toString() === myId);
+
+              const formatDate = (d) => d
+                ? new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })
+                : "TBA";
+
               return (
                 <div
                   key={t._id}
-                  className="flex items-center bg-base border border-muted rounded-lg p-3 w-[90%] max-w-[500px] shadow-md text-white mb-3"
+                  className="w-full max-w-2xl bg-base border border-muted rounded-xl p-4 shadow-md"
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-black font-bold mr-4 shrink-0">
-                    {t.teamName?.charAt(0)}
+                  {/* Top row: avatar + name + badge */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-black font-bold text-lg shrink-0">
+                      {t.teamName?.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-bold text-white">{t.teamName}</h3>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${spotsLeft > 0 ? "bg-green-500 text-black" : "bg-red-500 text-white"}`}>
+                          {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft > 1 ? "s" : ""} left` : "Full"}
+                        </span>
+                      </div>
+                      {t.projectName && (
+                        <p className="text-xs text-primary mt-0.5">{t.projectName}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleJoinTeam(t)}
+                      disabled={spotsLeft <= 0 || isMember}
+                      className="ml-auto bg-primary text-black px-4 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    >
+                      {isMember ? "Joined" : "Join"}
+                    </button>
                   </div>
-                  <div className="flex flex-col flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-lg">{t.teamName}</h3>
-                      <span className={`text-xs px-2 py-1 rounded font-semibold ${spotsLeft > 0 ? "bg-green-500 text-black" : "bg-red-500 text-white"}`}>
-                        {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft > 1 ? "s" : ""} left` : "Full"}
+
+                  {/* Description */}
+                  {t.description && (
+                    <p className="text-sm text-gray-400 mb-3 leading-relaxed">{t.description}</p>
+                  )}
+
+                  {/* Hackathon dates */}
+                  {hackathonData && (
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-3 bg-white/5 rounded-lg px-3 py-2">
+                      <span>
+                        <span className="text-white font-medium">{hackathonData.title || "Hackathon"}</span>
+                        <span className="mx-2 text-muted">·</span>
+                        {formatDate(hackathonData.startDate)} → {formatDate(hackathonData.endDate)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1">{t.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">{t.members?.length || 1} / {t.maxMembers} members</p>
+                  )}
+
+                  {/* Footer: members + skills */}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-xs text-gray-500">
+                      {t.members?.length || 1} / {t.maxMembers} members
+                    </p>
                     {t.requiredSkills?.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-400 mb-1">Required Skills:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {t.requiredSkills.map((tech, i) => (
-                            <span key={i} className="text-xs bg-primary text-black px-2 py-1 rounded font-medium">{tech}</span>
-                          ))}
-                        </div>
+                      <div className="flex flex-wrap gap-1">
+                        {t.requiredSkills.map((tech, i) => (
+                          <span key={i} className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-medium">
+                            {tech}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleJoinTeam(t._id)}
-                    disabled={spotsLeft <= 0}
-                    className="ml-3 bg-primary text-black px-3 py-1 rounded font-semibold disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                  >
-                    Join
-                  </button>
                 </div>
               );
             })

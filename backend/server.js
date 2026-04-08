@@ -575,9 +575,9 @@ app.post("/api/teams", async (req, res) => {
       teamName,
       projectName,
       description,
-      requiredSkills: requiredSkills
-        ? requiredSkills.split(",").map(s => s.trim())
-        : [],
+      requiredSkills: Array.isArray(requiredSkills)
+        ? requiredSkills.map(s => s.trim())
+        : (requiredSkills || "").split(",").map(s => s.trim()).filter(Boolean),
       maxMembers,
       role,
       hackathonId,
@@ -831,6 +831,173 @@ app.get("/api/hackathons/host/:hostid", async (req, res) => {
     res.json({ success: true, data: hackathons });
   } catch (err) {
     console.error("Backend error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-MATCHMAKING ENDPOINT
+// Add this block to your server.js, before the app.listen() line.
+//
+// POST /api/automatch
+// Body: { userId, hackathonId, teamSize }
+// Returns: { success, team: [user], diversityScore, coverageMap }
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ROLE_MAP_MATCH = {
+  "Frontend Developer": ["javascript", "html", "css", "typescript"],
+  "Backend Developer": ["python", "java", "go", "php", "ruby", "c#"],
+  "ML/AI Engineer": ["python", "r", "julia"],
+  "UI/UX Designer": ["html", "css"],
+};
+
+const IDEAL_ROLES_MATCH = [
+  "Frontend Developer",
+  "Backend Developer",
+  "ML/AI Engineer",
+  "UI/UX Designer",
+];
+
+/**
+ * Returns the top role for a user document, using the stored roles[] array
+ * that was computed during GitHub analysis at registration time.
+ */
+function topRoleFromDoc(user) {
+  return user.roles?.[0]?.role ?? "Developer";
+}
+
+/**
+ * Score a candidate for addition to a partial team.
+ * Rewards filling a missing IDEAL role (gap bonus) + raw skill strength.
+ */
+function scoreCandidateForTeam(candidate, currentTeamRoles) {
+  const needed = IDEAL_ROLES_MATCH.filter(r => !currentTeamRoles.has(r));
+  const role = topRoleFromDoc(candidate);
+  const roleStrength = parseFloat(candidate.roles?.[0]?.percentage ?? 50);
+
+  const gapBonus = needed.includes(role) ? 40 : 0;
+  const strength = roleStrength * 0.6;
+
+  return gapBonus + strength;
+}
+
+app.post("/api/automatch", async (req, res) => {
+  try {
+    const { userId, hackathonId, teamSize = 4 } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "userId is required" });
+    }
+
+    // 1. Load the requesting user
+    const me = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    if (!me) return res.status(404).json({ success: false, message: "User not found" });
+
+    // 2. Load all other users (exclude self)
+    const pool = await usersCollection
+      .find({ _id: { $ne: new ObjectId(userId) } })
+      .toArray();
+
+    // 3. Greedy team building
+    const selected = [me];
+    const usedIds = new Set([userId]);
+
+    while (selected.length < teamSize && pool.length > 0) {
+      const currentRoles = new Set(selected.map(topRoleFromDoc));
+      let best = null, bestScore = -Infinity;
+
+      for (const candidate of pool) {
+        const cId = candidate._id.toString();
+        if (usedIds.has(cId)) continue;
+
+        const score = scoreCandidateForTeam(candidate, currentRoles);
+        if (score > bestScore) { bestScore = score; best = candidate; }
+      }
+
+      if (!best) break;
+      selected.push(best);
+      usedIds.add(best._id.toString());
+    }
+
+    // 4. Build coverage map
+    const coveredRoles = new Set(selected.map(topRoleFromDoc));
+    const coverageMap = {};
+    for (const r of IDEAL_ROLES_MATCH) coverageMap[r] = coveredRoles.has(r);
+    const diversityScore = Object.values(coverageMap).filter(Boolean).length;
+
+    // 5. Sanitise — strip passwords before sending
+    const safeTeam = selected.map(({ password, ...u }) => u);
+
+    res.json({
+      success: true,
+      team: safeTeam,
+      diversityScore,
+      coverageMap,
+      teamSize: selected.length,
+    });
+
+  } catch (err) {
+    console.error("Automatch error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+app.post("/api/teams/:teamId/request-join", async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { userId } = req.body;
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    const fromUserName = user ? user.name : "Unknown User";
+
+    // Find team
+    const team = await teamsCollection.findOne({ _id: new ObjectId(teamId) });
+    if (!team) return res.status(404).json({ success: false, message: "Team not found" });
+
+    // Check if already a member
+    if (team.members.includes(userId)) {
+      return res.status(400).json({ success: false, message: "User already in team" });
+    }
+
+    // Send notification to creator
+    await notificationsCollection.insertOne({
+      toUserId: team.createdBy,
+      fromUserId: userId,
+      fromUserName,
+      teamId: team._id,
+      message: `${fromUserName} wants to join your team "${team.teamName}"`,
+      type: "join_request",
+      isRead: false,
+      status: "pending",
+      createdAt: new Date()
+    });
+
+    res.json({ success: true, message: "Join request sent to team creator" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+app.post("/api/join-request/respond", async (req, res) => {
+  const { notificationId, teamId, userId, action } = req.body;
+
+  try {
+    const team = await teamsCollection.findOne({ _id: new ObjectId(teamId) });
+    if (!team) return res.status(404).json({ success: false, message: "Team not found" });
+
+    if (action === "accept") {
+      // Add user to team members
+      if (!team.members.includes(userId)) {
+        await teamsCollection.updateOne(
+          { _id: new ObjectId(teamId) },
+          { $push: { members: userId } }
+        );
+      }
+    }
+
+    // Remove notification
+    await notificationsCollection.deleteOne({ _id: new ObjectId(notificationId) });
+
+    res.json({ success: true, action });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

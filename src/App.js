@@ -18,6 +18,7 @@ import HostLogin from './pages/HostLogin';
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HostDashboard from './pages/HostDashboard';
+import AutoMatch from './pages/AutoMatch';
 
 function App() {
   // ← CHANGE 1: Initialize from localStorage so refresh doesn't reset user to null
@@ -44,7 +45,7 @@ function App() {
               <Route path="/host-register" element={<HostRegistration />} />
               <Route path="/host-login" element={<HostLogin />} />
               <Route path="/host-dashboard" element={<HostDashboard />} />
-              
+
 
               <Route path="/hackathon-register" element={<Navigate to="/explore-hackathons" replace />} />
 
@@ -70,6 +71,17 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              <Route path="/discover/:hackathonId/automatch" element={
+                <ProtectedRoute user={user}>
+                  <AutoMatch />
+                </ProtectedRoute>
+              } />
+              <Route path="/automatch" element={
+                <ProtectedRoute user={user}>
+                  <AutoMatch />
+                </ProtectedRoute>
+              } />
+
               <Route path="/team" element={
                 <ProtectedRoute user={user}>
                   <Discover />
@@ -78,7 +90,7 @@ function App() {
 
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/help" element={<Help/>} />
+              <Route path="/help" element={<Help />} />
               <Route path='/explore-hackathons' element={<Hackathon />} />
 
             </Routes>

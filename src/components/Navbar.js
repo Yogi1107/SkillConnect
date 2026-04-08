@@ -225,6 +225,59 @@ export default function Navbar() {
                             </div>
                           )}
 
+                          {n.type === "join_request" && n.teamId && (
+                            <div className="flex gap-2 mt-1">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const res = await axios.post("http://localhost:5000/api/join-request/respond", {
+                                      notificationId: n._id,
+                                      teamId: n.teamId,
+                                      userId: n.fromUserId, // user who requested to join
+                                      action: "accept"
+                                    });
+                                    if (res.data.success) {
+                                      alert(`${n.fromUserName} has been added to the team!`);
+                                      setNotifications(prev =>
+                                        prev.filter(x => x._id !== n._id)
+                                      );
+                                    }
+                                  } catch (err) {
+                                    console.error(err);
+                                    alert("Failed to accept request.");
+                                  }
+                                }}
+                                className="flex items-center gap-1 bg-primary text-black text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-lime-300 transition"
+                              >
+                                <FiCheck size={12} /> Accept
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const res = await axios.post("http://localhost:5000/api/join-request/respond", {
+                                      notificationId: n._id,
+                                      teamId: n.teamId,
+                                      userId: n.fromUserId,
+                                      action: "reject"
+                                    });
+                                    if (res.data.success) {
+                                      alert(`${n.fromUserName}'s request has been rejected`);
+                                      setNotifications(prev =>
+                                        prev.filter(x => x._id !== n._id)
+                                      );
+                                    }
+                                  } catch (err) {
+                                    console.error(err);
+                                    alert("Failed to reject request.");
+                                  }
+                                }}
+                                className="flex items-center gap-1 bg-white/5 border border-muted/30 text-muted text-xs px-3 py-1.5 rounded-lg hover:border-red-400 hover:text-red-400 transition"
+                              >
+                                <FiXCircle size={12} /> Decline
+                              </button>
+                            </div>
+                          )}
+
                           <p className="text-[10px] text-muted/50 mt-2 font-primary">
                             {new Date(n.createdAt).toLocaleTimeString([], {
                               hour: "2-digit", minute: "2-digit"

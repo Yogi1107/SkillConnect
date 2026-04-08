@@ -253,7 +253,7 @@ const Discover = () => {
           className="h-9 px-4 text-sm font-medium rounded hover:opacity-80 border border-primary text-primary hover:bg-primary hover:text-black transition-all"
           onClick={() => navigate(`/discover/${hackathonId}/automatch`)}
         >
-          ⚡ AUTO MATCH
+          AUTO MATCH
         </button>
       </div>
 

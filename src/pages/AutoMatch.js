@@ -215,7 +215,7 @@ const AutoMatch = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white mb-1">
-          ⚡ Auto Matchmaking
+          Auto Matchmaking
         </h1>
         {hackathon && (
           <p className="text-sm text-gray-400">
@@ -388,19 +388,6 @@ const AutoMatch = () => {
                 </div>
               </div>
             </div>
-
-            {/* How it works */}
-            <div className="border border-muted rounded-lg p-4">
-              <p className="text-xs text-gray-400 uppercase tracking-widest mb-3">How It Works</p>
-              <ul className="text-xs text-gray-400 space-y-2">
-                <li>⚡ Analyzes GitHub language scores</li>
-                <li>🎯 Assigns weighted roles per user</li>
-                <li>🧩 Greedily fills missing roles first</li>
-                <li>🔄 Swap any member with alternatives</li>
-                <li>✉️ Saves team & sends invites auto</li>
-              </ul>
-            </div>
-
           </div>
         </div>
       )}

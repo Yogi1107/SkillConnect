@@ -21,11 +21,14 @@ const HostDashboard = () => {
     }, []);
 
     useEffect(() => {
-        if (!host) return;
+        console.log("Host object:", host);
+        console.log("Host ID:", host?.id);
+        if (!host?.id) return;
 
-        fetch(`http://localhost:5000/api/hackathons/hostId=${host._id}`)
+        fetch(`http://localhost:5000/api/hackathons/host/${host.id}`)
             .then(res => res.json())
             .then(data => {
+                console.log("API response:", data);
                 if (data.success && Array.isArray(data.data)) {
                     setHackathons(data.data);
                 } else {

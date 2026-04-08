@@ -813,18 +813,24 @@ app.post("/api/host-login", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error during host login" });
   }
 });
-app.get("/api/hackathons/:hostid", async (req, res) => {
+app.get("/api/hackathons/host/:hostid", async (req, res) => {
   const hostId = req.params.hostid;
+  console.log("Incoming hostId:", hostId);
+
+  if (!hostId) {
+    return res.status(400).json({ success: false, message: "Host ID is missing" });
+  }
 
   try {
-    // Assuming you are using Mongoose and your Hackathon model
     const hackathons = await hackathonsCollection.find({
       "hostOrganization.organizerId": hostId
-    });
+    }).toArray();
+
+    console.log("Hackathons found:", hackathons);
 
     res.json({ success: true, data: hackathons });
   } catch (err) {
-    console.error(err);
+    console.error("Backend error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

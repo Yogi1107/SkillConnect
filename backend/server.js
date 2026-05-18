@@ -8,7 +8,7 @@ import axios from "axios";
 dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -39,7 +39,7 @@ async function connectDB() {
     hostsCollection = db.collection("hosts");
 
 
-    console.log("✅ Connected to MongoDB Atlas");
+    console.log("Connected to MongoDB Atlas");
   } catch (error) {
     console.error("MongoDB connection error:", error);
   }
@@ -102,7 +102,7 @@ async function analyzeGithub(username) {
       Authorization: `token ${process.env.GITHUB_TOKEN}`
     };
 
-    console.log("🔍 Fetching repos for:", username);
+    console.log("Fetching repos for:", username);
 
     const reposRes = await axios.get(
       `https://api.github.com/users/${username}/repos`,
@@ -131,7 +131,7 @@ async function analyzeGithub(username) {
 
     return languageStats;
   } catch (error) {
-    console.error("❌ GitHub API Error:", error.message);
+    console.error("GitHub API Error:", error.message);
     throw error;
   }
 }
@@ -208,7 +208,7 @@ app.post("/api/register", async (req, res) => {
     }
 
     // -----------------------------
-    // 🔍 Fetch GitHub Profile
+    // Fetch GitHub Profile
     // -----------------------------
     const headers = {
       Authorization: `token ${process.env.GITHUB_TOKEN}`
@@ -222,13 +222,13 @@ app.post("/api/register", async (req, res) => {
     const avatar = profileRes.data.avatar_url;
 
     // -----------------------------
-    // 📊 Analyze GitHub
+    // Analyze GitHub
     // -----------------------------
     const languages = await analyzeGithub(githubId);
     const roles = mapRoles(languages);
 
     // -----------------------------
-    // 🧠 Extract Skills (Basic Logic)
+    // Extract Skills (Basic Logic)
     // -----------------------------
     const skills = {
       languages: Object.keys(languages),
@@ -260,7 +260,7 @@ app.post("/api/register", async (req, res) => {
     }
 
     // -----------------------------
-    // 🔢 Repo Count
+    // Repo Count
     // -----------------------------
     const reposRes = await axios.get(
       `https://api.github.com/users/${githubId}/repos`,
@@ -270,13 +270,13 @@ app.post("/api/register", async (req, res) => {
     const reposAnalyzed = reposRes.data.length;
 
     // -----------------------------
-    // 🔐 Hash Password
+    // Hash Password
     // -----------------------------
     const bcrypt = await import("bcrypt");
     const hashedPassword = await bcrypt.default.hash(password, 10);
 
     // -----------------------------
-    // 💾 Final User Object
+    // Final User Object
     // -----------------------------
     const newUser = {
       name,

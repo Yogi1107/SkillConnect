@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaGithub, FaGoogle, FaLinkedin, FaFacebook } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API_URL;
 

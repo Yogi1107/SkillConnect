@@ -1,8 +1,6 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 const DemoSection = () => {
-  const navigate = useNavigate();
 
   return (
     <div className="w-full text-white py-16 px-6 md:px-20">

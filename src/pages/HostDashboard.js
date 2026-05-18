@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const HostDashboard = () => {
     const [host, setHost] = useState(null);
     const [hackathons, setHackathons] = useState([]);
@@ -25,7 +27,7 @@ const HostDashboard = () => {
         console.log("Host ID:", host?.id);
         if (!host?.id) return;
 
-        fetch(`http://localhost:5000/api/hackathons/host/${host.id}`)
+        fetch(`${API_URL}/api/hackathons/host/${host.id}`)
             .then(res => res.json())
             .then(data => {
                 console.log("API response:", data);
@@ -67,7 +69,7 @@ const HostDashboard = () => {
         };
 
         try {
-            const res = await fetch("http://localhost:5000/api/hackathons", {
+            const res = await fetch(`${API_URL}/api/hackathons`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

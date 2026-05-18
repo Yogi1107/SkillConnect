@@ -3,6 +3,8 @@ import { CiFilter } from "react-icons/ci";
 import axios from "axios";
 import UserModal from "../components/UserModal";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Explore = () => {
   const [isFilterOpen, openFilter] = useState(false);
 
@@ -29,7 +31,7 @@ const Explore = () => {
     const init = async () => {
       try {
         const meRes = await axios.get(
-          `http://localhost:5000/api/me?email=${currentUser.email}`
+          `${API_URL}/api/me?email=${currentUser.email}`
         );
         const me = meRes.data;
         setCurrentMe(me);
@@ -37,7 +39,7 @@ const Explore = () => {
         const userId = (me._id?.$oid || me._id)?.toString();
 
         const connRes = await axios.get(
-          `http://localhost:5000/api/connections/${userId}`
+          `${API_URL}/api/connections/${userId}`
         );
         if (connRes.data.success) {
           const ids = connRes.data.data.map((u) =>
@@ -47,7 +49,7 @@ const Explore = () => {
         }
 
         const pendingRes = await axios.get(
-          `http://localhost:5000/api/requests/pending/${userId}`
+          `${API_URL}/api/requests/pending/${userId}`
         );
         if (pendingRes.data.success) {
           const ids = pendingRes.data.data.map((r) =>
@@ -67,7 +69,7 @@ const Explore = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/users");
+        const res = await axios.get(`${API_URL}/api/users`);
         setUsers(res.data);
         setFilteredUsers(res.data);
       } catch (err) {
@@ -132,7 +134,7 @@ const Explore = () => {
   const handleUserProfile = async (email) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/users?email=${email}`
+        `${API_URL}/api/users?email=${email}`
       );
       setSelectedUser(res.data);
       setIsUserModalOpen(true);
@@ -148,7 +150,7 @@ const Explore = () => {
         return;
       }
 
-      await axios.post("http://localhost:5000/api/request/send", {
+      await axios.post(`${API_URL}/api/request/send`, {
         fromUserId: (currentMe._id?.$oid || currentMe._id)?.toString(),
         fromUserName: currentMe.name,
         toUserId: toUserId.toString(),

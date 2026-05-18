@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function HostRegister() {
   const navigate = useNavigate();
 
@@ -30,7 +32,7 @@ export default function HostRegister() {
       setLoading(true);
       setError("");
 
-      const res = await fetch("http://localhost:5000/api/host-register", {
+      const res = await fetch(`${API_URL}/api/host-register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)

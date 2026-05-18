@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaGithub, FaGoogle, FaLinkedin, FaFacebook } from "react-icons/fa";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Login({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +18,7 @@ export default function Login({ setUser }) {
     e.preventDefault();
     setLoading(true);
 
-    fetch("http://localhost:5000/api/login", {
+    fetch(`${API_URL}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })

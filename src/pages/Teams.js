@@ -2,6 +2,8 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Discover = () => {
   const { hackathonId } = useParams();
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ const Discover = () => {
     if (!stored) return;
     const email = JSON.parse(stored).email;
 
-    fetch(`http://localhost:5000/api/me?email=${email}`)
+    fetch(`${API_URL}/api/me?email=${email}`)
       .then(res => res.json())
       .then(data => setCurrentUser(data))
       .catch(err => console.error(err));
@@ -47,7 +49,7 @@ const Discover = () => {
 
   // Fetch all users
   useEffect(() => {
-    fetch("http://localhost:5000/api/users")
+    fetch(`${API_URL}/api/users`)
       .then(res => res.json())
       .then(data => setUsers(data))
       .catch(err => console.error(err));
@@ -58,7 +60,7 @@ const Discover = () => {
     if (!currentUser) return;
     const userId = (currentUser._id?.$oid || currentUser._id)?.toString();
 
-    fetch(`http://localhost:5000/api/connections/${userId}`)
+    fetch(`${API_URL}/api/connections/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) setConnections(data.data);
@@ -68,7 +70,7 @@ const Discover = () => {
 
   // Fetch teams
   useEffect(() => {
-    fetch(`http://localhost:5000/api/teams?hackathonId=${hackathonId}`)
+    fetch(`${API_URL}/api/teams?hackathonId=${hackathonId}`)
       .then(res => res.json())
       .then(data => setTeams(data))
       .catch(err => console.error(err));
@@ -77,7 +79,7 @@ const Discover = () => {
   // Fetch hackathon data
   useEffect(() => {
     if (!hackathonId) return;
-    fetch(`http://localhost:5000/api/hackathons/${hackathonId}`)
+    fetch(`${API_URL}/api/hackathons/${hackathonId}`)
       .then(res => res.json())
       .then(data => setHackathonData(data.data))
       .catch(err => console.error(err));
@@ -131,7 +133,7 @@ const Discover = () => {
   const sendInvite = async (user, team) => {
     if (!currentUser || !team) return;
 
-    await fetch("http://localhost:5000/api/invite/send", {
+    await fetch(`${API_URL}/api/invite/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -152,7 +154,7 @@ const Discover = () => {
     if (!formData.teamName || !formData.role) return alert("Team name and role are required.");
 
     try {
-      const teamRes = await fetch("http://localhost:5000/api/teams", {
+      const teamRes = await fetch(`${API_URL}/api/teams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -176,7 +178,7 @@ const Discover = () => {
       }
       if (!teamData.success) return alert("Failed to create team: " + teamData.message);
 
-      const regRes = await fetch(`http://localhost:5000/api/hackathons/${hackathonId}/register`, {
+      const regRes = await fetch(`${API_URL}/api/hackathons/${hackathonId}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: myId })
@@ -185,7 +187,7 @@ const Discover = () => {
 
       if (regData.success) {
         alert("Team created & registered!");
-        const refreshed = await fetch(`http://localhost:5000/api/teams?hackathonId=${hackathonId}`);
+        const refreshed = await fetch(`${API_URL}/api/teams?hackathonId=${hackathonId}`);
         setTeams(await refreshed.json());
         setFormData(prev => ({
           ...prev,
@@ -204,7 +206,7 @@ const Discover = () => {
     if (!currentUser) return alert("You must be logged in.");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/teams/${team._id}/request-join`, {
+      const res = await fetch(`${API_URL}/api/teams/${team._id}/request-join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: myId })

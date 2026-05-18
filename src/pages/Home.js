@@ -6,6 +6,8 @@ import DemoSection from "../components/DemoSection.js";
 import StepSection from "../components/StepSection.js";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Home = () => {
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ const Home = () => {
 
   // Fetch hackathons (ONLY ONCE)
   useEffect(() => {
-    fetch("http://localhost:5000/api/hackathons")
+    fetch(`${API_URL}/api/hackathons`)
       .then((res) => res.json())
       .then((data) => {
         const sorted = data.data.sort(
@@ -93,7 +95,7 @@ const Home = () => {
   const handleOpen = async (id) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/hackathons/${id}`
+        `${API_URL}/api/hackathons/${id}`
       );
       setHackathon(res.data.data);
       setIsOpen(true);

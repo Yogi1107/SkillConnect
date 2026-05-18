@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -12,7 +14,7 @@ const Profile = () => {
 
     const { email, _id } = JSON.parse(stored);
 
-    fetch(`http://localhost:5000/api/me?email=${email}`)
+    fetch(`${API_URL}/api/me?email=${email}`)
       .then(res => res.json())
       .then(data => {
         setUser(data);
@@ -20,7 +22,7 @@ const Profile = () => {
         const userId = (data._id?.$oid || data._id || _id)?.toString();
 
         // Fetch teams
-        fetch(`http://localhost:5000/api/teams`)
+        fetch(`${API_URL}/api/teams`)
           .then(res => res.json())
           .then(allTeams => {
             setTeams(allTeams.filter(team =>
@@ -29,7 +31,7 @@ const Profile = () => {
           });
 
         // Fetch connections
-        fetch(`http://localhost:5000/api/connections/${userId}`)
+        fetch(`${API_URL}/api/connections/${userId}`)
           .then(res => res.json())
           .then(result => {
             if (result.success) setConnections(result.data);

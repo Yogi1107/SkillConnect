@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ export default function Register() {
         ? form.github.split("github.com/")[1].replace(/\//g, "")
         : form.github.trim();
 
-      const res = await fetch(`http://localhost:5000/api/github/${username}`);
+      const res = await fetch(`${API_URL}/api/github/${username}`);
       const data = await res.json();
 
       if (data.error) throw new Error(data.error);
@@ -65,7 +67,7 @@ export default function Register() {
         ? form.github.split("github.com/")[1].replace(/\//g, "")
         : form.github.trim();
 
-      const res = await fetch("http://localhost:5000/api/register", {
+      const res = await fetch(`${API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

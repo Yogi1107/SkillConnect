@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "../components/Modal";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Hackathon = () => {
 
   const [hackathons, setHackathons] = useState([]);
@@ -22,7 +24,7 @@ const Hackathon = () => {
   useEffect(() => {
     const fetchHackathons = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/hackathons");
+        const res = await axios.get(`${API_URL}/api/hackathons`);
         setHackathons(res.data.data || []);
         setFiltered(res.data.data || []);
       } catch (err) {
@@ -35,7 +37,7 @@ const Hackathon = () => {
   // Open modal
   const handleOpen = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/hackathons/${id}`);
+      const res = await axios.get(`${API_URL}/api/hackathons/${id}`);
       setHackathon(res.data.data);
       setIsOpen(true);
     } catch (err) {

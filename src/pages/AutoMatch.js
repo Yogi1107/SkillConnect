@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 // ─── Role helpers ──────────────────────────────────────────────────────────
 const IDEAL_ROLES = ["Frontend Developer", "Backend Developer", "ML/AI Engineer", "UI/UX Designer"];
 
@@ -45,7 +47,7 @@ const AutoMatch = () => {
   // ── Fetch data ──
   useEffect(() => {
     if (hackathonId) {
-      axios.get(`http://localhost:5000/api/hackathons/${hackathonId}`)
+      axios.get(`${API_URL}/api/hackathons/${hackathonId}`)
         .then(r => {
           setHackathon(r.data.data);
           if (r.data.data?.maxTeamSize) setTeamSize(r.data.data.maxTeamSize);
@@ -53,14 +55,14 @@ const AutoMatch = () => {
         .catch(console.error);
     }
 
-    axios.get("http://localhost:5000/api/users")
+    axios.get(`${API_URL}/api/users`)
       .then(r => setAllUsers(r.data))
       .catch(console.error);
 
     const stored = localStorage.getItem("user");
     if (stored) {
       const { email } = JSON.parse(stored);
-      axios.get(`http://localhost:5000/api/me?email=${email}`)
+      axios.get(`${API_URL}/api/me?email=${email}`)
         .then(r => setCurrentUser(r.data))
         .catch(console.error);
     }
@@ -175,12 +177,12 @@ const AutoMatch = () => {
         autoMatched: true,
       };
 
-      const res = await axios.post("http://localhost:5000/api/teams", payload);
+      const res = await axios.post(`${API_URL}/api/teams`, payload);
 
       if (res.data.success) {
         for (const member of team.slice(1)) {
           const toId = (member._id?.$oid || member._id)?.toString();
-          await axios.post("http://localhost:5000/api/invite/send", {
+          await axios.post(`${API_URL}/api/invite/send`, {
             fromUserId: myId,
             fromUserName: currentUser.name,
             toUserId: toId,

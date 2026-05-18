@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.VITE_API_URL;
 
 export default function Login({ setUser }) {
   const [email, setEmail] = useState("");

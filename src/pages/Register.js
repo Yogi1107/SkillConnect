@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = process.env.VITE_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 export default function Register() {
   const navigate = useNavigate();
